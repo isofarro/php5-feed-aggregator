@@ -16,9 +16,10 @@ class FeedAggregator {
 	}
 	
 	public function setConfig($config) {
-		$this->config = $config;
+		if (is_array($config)) {
+			$this->config = array_merge($this->config, $config);
+		}
 	}
-	
 
 	public function getItems($url, $maxItems=5) {
 	
