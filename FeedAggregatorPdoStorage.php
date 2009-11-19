@@ -11,8 +11,8 @@ class FeedAggregatorPdoStorage {
 	var $stmCache = array();
 	
 	// Configuration
-	var $confi = array(
-		'datasource' => 'sqlite:/tmp/tmp-feed-aggregator.db';
+	var $config = array(
+		'datasource' => 'sqlite:/tmp/tmp-feed-aggregator.db'
 	);
 	
 	
@@ -20,7 +20,7 @@ class FeedAggregatorPdoStorage {
 		__construct: initialising storage
 		@param config array, an optional configuration hash
 	**/
-	public __construct($config=false) {
+	public function __construct($config=false) {
 		if ($config) {
 			$this->setConfig($config);
 		}
@@ -33,6 +33,45 @@ class FeedAggregatorPdoStorage {
 	}
 
 
+	public function addFeed($feed) {
+		$this->_initDbConnection();
+		
+		$stm = $this->_prepareStatement('feed', 'add');
+		$stm->execute(array(
+			':url'         => $feed->url,
+			':title'       => $feed->title,
+
+			':type'        => (!empty($feed->type))?$feed->type:'F',
+			':status'      => (!empty($feed->status))?$feed->status:'A',
+			':created'     => time(),
+			':lastUpdated' => 0,
+			':lastPolled'  => 0,
+			':nextPoll'    => 0
+		));
+
+		if ($this->_isPdoError($stm)) {
+			return false;
+		}		
+		
+		return true;
+	}
+
+	public function getFeeds() {
+		$this->_initDbConnection();
+		
+		$stm = $this->_prepareStatement('feed', 'getAll');		
+		$stm->execute();
+		
+		if ($this->_checkPdoError($stm)) {
+			return NULL;
+		}
+
+		$feeds = array();
+		while($row = $stm->fetchObject()) {
+			$feeds[] = $row;
+		}
+		return $feeds;
+	}
 
 
 	####################################################################
@@ -83,7 +122,7 @@ class FeedAggregatorPdoStorage {
 		// Check for fatal failures?
 		if ($db->errorCode() !== '00000') {
 			$info = $db->errorInfo();
-			die('TwitterForgePdoStorage->_initDbTables: PDO Error: ' . 
+			die('FeedAggregatorPdoStorage->_initDbTables: PDO Error: ' . 
 				implode(', ', $info) . "\n");
 		}
 	}
@@ -144,6 +183,18 @@ CREATE TABLE IF NOT EXISTS `feed` (
 	lastPolled  DATETIME,
 	nextPoll    DATETIME
 );
+SQL;
+
+		$this->schema['feed']['add'] = <<<SQL
+INSERT INTO `feed` 
+(id, url, title, type, status, created, lastUpdated, lastPolled, nextPoll)
+VALUES
+(NULL, :url, :title, :type, :status, 
+ :created, :lastUpdated, :lastPolled, :nextPoll);
+SQL;
+
+		$this->schema['feed']['getAll'] = <<<SQL
+SELECT * FROM `feed`;
 SQL;
 
 
