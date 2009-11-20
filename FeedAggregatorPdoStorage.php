@@ -109,6 +109,31 @@ class FeedAggregatorPdoStorage {
 		return NULL;
 	}
 
+	public function deleteFeed($feed) {
+		$this->_initDbConnection();
+		
+		if (is_string($feed)) {
+			$stm = $this->_prepareStatement('feed', 'deleteByUrl');		
+			$stm->execute(array(
+				':url' => $feed
+			));
+		} else if (!empty($feed->id)) {
+			$stm = $this->_prepareStatement('feed', 'deleteById');		
+			$stm->execute(array(
+				':id' => $feed->id
+			));
+		}
+			
+		if ($this->_checkPdoError($stm)) {
+			return false;
+		}
+
+		if ($stm->rowCount()) {
+			return true;
+		}	
+		return false;
+	}
+
 	####################################################################
 	##
 	## Private and protected methods
@@ -234,6 +259,18 @@ SQL;
 
 		$this->schema['feed']['getByUrl'] = <<<SQL
 SELECT * FROM `feed`
+WHERE
+	url = :url;
+SQL;
+
+		$this->schema['feed']['deleteById'] = <<<SQL
+DELETE FROM `feed`
+WHERE
+	id = :id;
+SQL;
+
+		$this->schema['feed']['deleteByUrl'] = <<<SQL
+DELETE FROM `feed`
 WHERE
 	url = :url;
 SQL;

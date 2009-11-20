@@ -109,6 +109,14 @@ class FeedAggregatorPdoStorageTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(0,   $feed2->lastUpdated);
 		$this->assertEquals(0,   $feed2->lastPolled);
 		$this->assertEquals(0,   $feed2->nextPoll);
+		
+		// Delete the feed
+		$res = $this->storage->deleteFeed($feed->url);
+		$this->assertTrue($res);
+
+		// Check feed hasn't been added		
+		$res = $this->storage->isFeed($feed->url);
+		$this->assertFalse($res);
 	}
 } 
 
