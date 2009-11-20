@@ -73,6 +73,41 @@ class FeedAggregatorPdoStorage {
 		return $feeds;
 	}
 
+	public function isFeed($url) {
+		$this->_initDbConnection();
+		
+		$stm = $this->_prepareStatement('feed', 'getByUrl');		
+		$stm->execute(array(
+			':url' => $url
+		));
+		
+		if ($this->_checkPdoError($stm)) {
+			return false;
+		}
+
+		if ($feed = $stm->fetchObject()) {
+			return true;
+		}	
+		return false;
+	}
+
+	public function getFeed($url) {
+		$this->_initDbConnection();
+		
+		$stm = $this->_prepareStatement('feed', 'getByUrl');		
+		$stm->execute(array(
+			':url' => $url
+		));
+		
+		if ($this->_checkPdoError($stm)) {
+			return false;
+		}
+
+		if ($feed = $stm->fetchObject()) {
+			return $feed;
+		}	
+		return NULL;
+	}
 
 	####################################################################
 	##
@@ -197,6 +232,11 @@ SQL;
 SELECT * FROM `feed`;
 SQL;
 
+		$this->schema['feed']['getByUrl'] = <<<SQL
+SELECT * FROM `feed`
+WHERE
+	url = :url;
+SQL;
 
 		#################################################################
 		#
