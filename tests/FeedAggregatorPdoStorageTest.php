@@ -110,6 +110,20 @@ class FeedAggregatorPdoStorageTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(0,   $feed2->lastPolled);
 		$this->assertEquals(0,   $feed2->nextPoll);
 		
+		// Check feed can be retrieved by Id		
+		$feed3 = $this->storage->getFeedById($feed2->id);
+		$this->assertNotNull($feed3);
+		$this->assertNotNull($feed3->id);
+		$this->assertNotNull($feed3->url);
+		$this->assertNotNull($feed3->title);
+
+		$this->assertTrue(is_numeric($feed3->id));
+		$this->assertTrue(is_numeric($feed3->created));
+		$this->assertEquals($feed->url,      $feed3->url);
+		$this->assertEquals($feed->title,    $feed3->title);
+		$this->assertEquals($feed2->id,      $feed3->id);
+		$this->assertEquals($feed2->created, $feed3->created);
+
 		// Delete the feed
 		$res = $this->storage->deleteFeed($feed->url);
 		$this->assertTrue($res);

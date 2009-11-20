@@ -109,6 +109,24 @@ class FeedAggregatorPdoStorage {
 		return NULL;
 	}
 
+	public function getFeedById($id) {
+		$this->_initDbConnection();
+		
+		$stm = $this->_prepareStatement('feed', 'getById');		
+		$stm->execute(array(
+			':id' => $id
+		));
+		
+		if ($this->_checkPdoError($stm)) {
+			return false;
+		}
+
+		if ($feed = $stm->fetchObject()) {
+			return $feed;
+		}	
+		return NULL;
+	}
+
 	public function deleteFeed($feed) {
 		$this->_initDbConnection();
 		
@@ -133,6 +151,42 @@ class FeedAggregatorPdoStorage {
 		}	
 		return false;
 	}
+
+
+	public function addAuthor($author) {
+		$this->_initDbConnection();
+		
+		$stm = $this->_prepareStatement('author', 'add');
+		$stm->execute(array(
+			':name'  => $author->name,
+			':url'   => (!empty($author->url))?$author->url:'',
+			':email' => (!empty($author->email))?$author->email:''
+		));
+
+		if ($this->_isPdoError($stm)) {
+			return false;
+		}		
+		
+		return true;
+	}
+
+	public function getAuthors() {
+		$this->_initDbConnection();
+		
+		$stm = $this->_prepareStatement('author', 'getAll');		
+		$stm->execute();
+		
+		if ($this->_checkPdoError($stm)) {
+			return NULL;
+		}
+
+		$authors = array();
+		while($row = $stm->fetchObject()) {
+			$authors[] = $row;
+		}
+		return $authors;
+	}
+
 
 	####################################################################
 	##
@@ -257,6 +311,12 @@ SQL;
 SELECT * FROM `feed`;
 SQL;
 
+		$this->schema['feed']['getById'] = <<<SQL
+SELECT * FROM `feed`
+WHERE
+	id = :id;
+SQL;
+
 		$this->schema['feed']['getByUrl'] = <<<SQL
 SELECT * FROM `feed`
 WHERE
@@ -291,6 +351,28 @@ CREATE TABLE IF NOT EXISTS `author` (
 );
 SQL;
 
+		$this->schema['author']['insert'] = <<<SQL
+INSERT INTO `author`
+(id, name, url, email)
+VALUES
+(NULL, :name, :url, :email)
+SQL;
+
+		$this->schema['author']['getAll'] = <<<SQL
+SELECT * FROM `author`;
+SQL;
+
+		$this->schema['author']['getByName'] = <<<SQL
+SELECT * FROM `author`
+WHERE
+	name = :name;
+SQL;
+
+		$this->schema['author']['getById'] = <<<SQL
+SELECT * FROM `author`
+WHERE
+	id = :id;
+SQL;
 
 		#################################################################
 		#
