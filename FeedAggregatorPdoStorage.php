@@ -41,6 +41,11 @@ class FeedAggregatorPdoStorage {
 	## Feed table
 	##
 
+	/**
+		addFeed: adds a new Feed to the aggregator
+		@param a feed object
+		@returns boolean whether the feed was added and doesn't already exist
+	**/
 	public function addFeed($feed) {
 		$this->_initDbConnection();
 		
@@ -64,7 +69,10 @@ class FeedAggregatorPdoStorage {
 		return true;
 	}
 	
-
+	/**
+		getFeeds: returns all the feeds the aggregator has saved
+		@returns an array of Feed objects
+	**/
 	public function getFeeds() {
 		$this->_initDbConnection();
 		
@@ -82,13 +90,21 @@ class FeedAggregatorPdoStorage {
 		return $feeds;
 	}
 	
-
+	/**
+		isFeed: checks to see if a feed exists, given it's URL
+		@param the url of the feed
+		@returns boolean whether the feed exists or not
+	**/
 	public function isFeed($url) {
 		$feed = $this->getFeed($url);
 		return !empty($feed->url);
 	}
 	
-
+	/**
+		getFeed: gets the feed data for the specified URL
+		@param the url of the feed
+		@returns a Feed object, or NULL
+	**/
 	public function getFeed($url) {
 		$this->_initDbConnection();
 		
@@ -98,7 +114,7 @@ class FeedAggregatorPdoStorage {
 		));
 		
 		if ($this->_checkPdoError($stm)) {
-			return false;
+			return NULL;
 		}
 
 		if ($feed = $stm->fetchObject()) {
@@ -107,7 +123,11 @@ class FeedAggregatorPdoStorage {
 		return NULL;
 	}
 
-
+	/**
+		getFeedById: gets the feed by it's primary key
+		@param id of the feed
+		@returns a Feed object, or NULL
+	**/
 	public function getFeedById($id) {
 		$this->_initDbConnection();
 		
@@ -117,7 +137,7 @@ class FeedAggregatorPdoStorage {
 		));
 		
 		if ($this->_checkPdoError($stm)) {
-			return false;
+			return NULL;
 		}
 
 		if ($feed = $stm->fetchObject()) {
@@ -126,7 +146,11 @@ class FeedAggregatorPdoStorage {
 		return NULL;
 	}
 	
-
+	/**
+		deleteFeed: deletes the feed associated with the specified URL
+		@param url of the feed
+		@returns boolean whether the deletion of the feed was successful or not
+	**/
 	public function deleteFeed($feed) {
 		$this->_initDbConnection();
 		
@@ -156,6 +180,11 @@ class FeedAggregatorPdoStorage {
 	## Author table
 	##
 
+	/**
+		addAuthor: adds a new Author object to the aggregator
+		@param an Author object
+		@returns boolean whether the Author was saved or not
+	**/
 	public function addAuthor($author) {
 		$this->_initDbConnection();
 		
