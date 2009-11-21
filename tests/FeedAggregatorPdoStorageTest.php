@@ -24,6 +24,15 @@ class FeedAggregatorPdoStorageTest extends PHPUnit_Framework_TestCase {
 		);
 	}
 
+	protected function _getAuthor() {
+		return (object)array(
+			'name'  => 'Unit test author',
+			'url'   => 'http://example.org/author.html',
+			'email' => 'author@example.com'
+		);
+	}
+
+
 	public function testInit() {
 		$this->assertTrue(class_exists('FeedAggregatorPdoStorage'));
 	}
@@ -131,6 +140,87 @@ class FeedAggregatorPdoStorageTest extends PHPUnit_Framework_TestCase {
 		// Check feed hasn't been added		
 		$res = $this->storage->isFeed($feed->url);
 		$this->assertFalse($res);
+	}
+	
+	public function testAuthor() {
+		$author = $this->_getAuthor();
+
+		// Check that there are no authors
+		$authors = $this->storage->getAuthors();
+		$this->assertNotNull($authors);
+		$this->assertTrue(is_array($authors));
+		$this->assertEquals(0, count($authors));
+
+		// Check the author hasn't already been added		
+		$res = $this->storage->isAuthor($author->name);
+		$this->assertFalse($res);
+
+		// Adding an author
+		$res = $this->storage->addAuthor($author);
+		$this->assertTrue($res);
+		
+		// Check the author table isn't empty
+		$authors = $this->storage->getAuthors();
+		$this->assertNotNull($authors);
+		$this->assertTrue(is_array($authors));
+		$this->assertEquals(1, count($authors));
+		
+		$author1 = $authors[0];
+		$this->assertNotNull($author1);
+		$this->assertNotNull($author1->id);
+		$this->assertNotNull($author1->name);
+		$this->assertNotNull($author1->url);
+		$this->assertNotNull($author1->email);
+		
+		$this->assertTrue(is_numeric($author1->id));
+		$this->assertEquals($author1->url, $author1->url);
+		$this->assertEquals($author1->name, $author1->name);
+		$this->assertEquals($author1->email, $author1->email);
+
+		// Check author has been added		
+		$res = $this->storage->isAuthor($author->name);
+		$this->assertTrue($res);
+
+
+		// Check author can be retrieved		
+		$author2 = $this->storage->getAuthor($author->name);
+		$this->assertNotNull($author2);
+		$this->assertNotNull($author2->id);
+		$this->assertNotNull($author2->name);
+		$this->assertNotNull($author2->url);
+		$this->assertNotNull($author2->email);
+		
+		$this->assertTrue(is_numeric($author2->id));
+		$this->assertEquals($author2->url, $author2->url);
+		$this->assertEquals($author2->name, $author2->name);
+		$this->assertEquals($author2->email, $author2->email);
+
+		// Adding an existing author
+		$res = $this->storage->addAuthor($author);
+		$this->assertFalse($res);
+
+		// Check author can be retrieved by id
+		$author3 = $this->storage->getAuthorById($author2->id);
+		$this->assertNotNull($author3);
+		$this->assertNotNull($author3->id);
+		$this->assertNotNull($author3->name);
+		$this->assertNotNull($author3->url);
+		$this->assertNotNull($author3->email);
+		
+		$this->assertTrue(is_numeric($author3->id));
+		$this->assertEquals($author3->url, $author3->url);
+		$this->assertEquals($author3->name, $author3->name);
+		$this->assertEquals($author3->email, $author3->email);
+
+		
+		// Delete the author
+		$res = $this->storage->deleteAuthor($author->name);
+		$this->assertTrue($res);
+
+		// Check author doesn't exist
+		$res = $this->storage->isAuthor($author->name);
+		$this->assertFalse($res);
+
 	}
 } 
 

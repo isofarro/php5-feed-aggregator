@@ -26,6 +26,7 @@ class FeedAggregatorPdoStorage {
 		}
 	}
 	
+	
 	public function setConfig($config) {
 		if (is_array($config)) {
 			$this->config = array_merge($this->config, $config);
@@ -55,6 +56,7 @@ class FeedAggregatorPdoStorage {
 		
 		return true;
 	}
+	
 
 	public function getFeeds() {
 		$this->_initDbConnection();
@@ -72,24 +74,13 @@ class FeedAggregatorPdoStorage {
 		}
 		return $feeds;
 	}
+	
 
 	public function isFeed($url) {
-		$this->_initDbConnection();
-		
-		$stm = $this->_prepareStatement('feed', 'getByUrl');		
-		$stm->execute(array(
-			':url' => $url
-		));
-		
-		if ($this->_checkPdoError($stm)) {
-			return false;
-		}
-
-		if ($feed = $stm->fetchObject()) {
-			return true;
-		}	
-		return false;
+		$feed = $this->getFeed($url);
+		return !empty($feed->url);
 	}
+	
 
 	public function getFeed($url) {
 		$this->_initDbConnection();
@@ -109,6 +100,7 @@ class FeedAggregatorPdoStorage {
 		return NULL;
 	}
 
+
 	public function getFeedById($id) {
 		$this->_initDbConnection();
 		
@@ -126,6 +118,7 @@ class FeedAggregatorPdoStorage {
 		}	
 		return NULL;
 	}
+	
 
 	public function deleteFeed($feed) {
 		$this->_initDbConnection();
@@ -170,6 +163,7 @@ class FeedAggregatorPdoStorage {
 		return true;
 	}
 
+
 	public function getAuthors() {
 		$this->_initDbConnection();
 		
@@ -186,6 +180,12 @@ class FeedAggregatorPdoStorage {
 		}
 		return $authors;
 	}
+	
+	public function isAuthor($name) {
+		$author = $this->getAuthor($name);
+		return !empty($author->name);
+	}
+
 
 	public function getAuthorById($id) {
 		$this->_initDbConnection();
@@ -204,6 +204,7 @@ class FeedAggregatorPdoStorage {
 		}	
 		return NULL;
 	}
+	
 
 	public function getAuthor($name) {
 		$this->_initDbConnection();
@@ -222,6 +223,33 @@ class FeedAggregatorPdoStorage {
 		}	
 		return NULL;
 	}
+
+
+	public function deleteAuthor($author) {
+		$this->_initDbConnection();
+		
+		if (is_string($author)) {
+			$stm = $this->_prepareStatement('author', 'deleteByName');		
+			$stm->execute(array(
+				':name' => $author
+			));
+		} else if (!empty($author->id)) {
+			$stm = $this->_prepareStatement('author', 'deleteById');		
+			$stm->execute(array(
+				':id' => $author->id
+			));
+		}
+			
+		if ($this->_checkPdoError($stm)) {
+			return false;
+		}
+
+		if ($stm->rowCount()) {
+			return true;
+		}	
+		return false;
+	}
+	
 
 	####################################################################
 	##
@@ -386,7 +414,7 @@ CREATE TABLE IF NOT EXISTS `author` (
 );
 SQL;
 
-		$this->schema['author']['insert'] = <<<SQL
+		$this->schema['author']['add'] = <<<SQL
 INSERT INTO `author`
 (id, name, url, email)
 VALUES
@@ -409,6 +437,19 @@ WHERE
 	id = :id;
 SQL;
 
+		$this->schema['author']['deleteByName'] = <<<SQL
+DELETE FROM `author`
+WHERE
+	name = :name;
+SQL;
+
+		$this->schema['author']['deleteById'] = <<<SQL
+DELETE FROM `author`
+WHERE
+	id = :id;
+SQL;
+
+
 		#################################################################
 		#
 		# TABLE: entry
@@ -416,13 +457,14 @@ SQL;
 		
 		$this->schema['entry']['create'] = <<<SQL
 CREATE TABLE IF NOT EXISTS `entry` (
-	id          INTEGER PRIMARY KEY AUTOINCREMENT,
-	url         VARCHAR(255) UNIQUE,
+	row_id      INTEGER PRIMARY KEY AUTOINCREMENT,
+	url         VARCHAR(255),
 	title       VARCHAR(255),
-	atomid      VARCHAR(255),
+	id          VARCHAR(255) UNIQUE,
 	author_id   INTEGER,
+	summary     TEXT,
 	content     TEXT,
-	created     DATETIME,
+	published   DATETIME,
 	updated     DATETIME
 
 );
