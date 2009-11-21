@@ -26,7 +26,11 @@ class FeedAggregatorPdoStorage {
 		}
 	}
 	
-	
+	/**
+		setConfig: updates the configuration with the supplied hash of configuration 
+			settings.
+		@param config array
+	**/
 	public function setConfig($config) {
 		if (is_array($config)) {
 			$this->config = array_merge($this->config, $config);
@@ -388,14 +392,21 @@ class FeedAggregatorPdoStorage {
 	## Private and protected methods
 	##
 	
+	/**
+		_hydrateEntry: Takes an entry object recently retrieved from storage
+			and hydrates it, bringing in the author details, and formatting
+			dates into ISO8601 format.
+		@param an Entry row
+		@returns a hydrated Entry object
+	**/
 	protected function _hydrateEntry($entry) {
 		//echo "Hydrating: "; print_r($entry);
 		
-		if ($entry->published) {
+		if ($entry->published && is_numeric($entry->published)) {
 			$entry->published = date('c', $entry->published);
 		}
 
-		if ($entry->updated) {
+		if ($entry->updated && is_numeric($entry->updated) && $entry->updated>0) {
 			$entry->updated = date('c', $entry->updated);
 		}
 		
@@ -408,6 +419,13 @@ class FeedAggregatorPdoStorage {
 		return $entry;
 	}
 	
+	/**
+		_getAuthorId: returns the author id for the specified author object.
+			If none found, the function stores the author and returns it's key.
+			Or returns 0 if this fails.
+		@param an Author object
+		@returns the Author id, or 0 if none could be found/created
+	**/
 	protected function _getAuthorId($author) {
 		if (!empty($author->id)) {
 			return $author->id;
@@ -471,6 +489,12 @@ class FeedAggregatorPdoStorage {
 		}
 	}
 	
+	/**
+		_isPdoError: quiet check for a PDO error. Returns true/false whether an 
+			error occurred or not.
+		@param a PDO statement
+		@returns boolean whether an error occurred or not
+	**/
 	protected function _isPdoError($stm) {
 		// Check for errors
 		if ($stm->errorCode() !== '00000') {
@@ -479,6 +503,12 @@ class FeedAggregatorPdoStorage {
 		return false;
 	}
 	
+	/**
+		_checkPdoError: checks the PDO statement for an error, and displays
+			a message before returning true/false whether an error occurred.
+		@param a PDO statement
+		@returns boolean whether an error occurred or not
+	**/
 	protected function _checkPdoError($stm) {
 		// Check for fatal failures?
 		if ($stm->errorCode() !== '00000') {
@@ -489,11 +519,22 @@ class FeedAggregatorPdoStorage {
 		return false;
 	}
 	
+	/**
+		_prepareStatement: lazy cache of prepared statements, so the prepare
+			statement is only done once in the current instantiation, and 
+			reused wherever possible.
+		@param table name (from the schema)
+		@param query name (from the schema)
+		@returns a prepared PDO Statement
+	**/
 	protected function _prepareStatement($table, $queryKey) {
 		$cacheKey = "{$table}:{$queryKey}";
 		if (empty($this->stmCache[$cacheKey])) {
 			$stm = $this->db->prepare($this->schema[$table][$queryKey]);	
 			$this->stmCache[$cacheKey] = $stm;
+		} else {
+			// Cache hit!
+			//echo '±';
 		}
 		return $this->stmCache[$cacheKey];
 	}
