@@ -187,6 +187,41 @@ class FeedAggregatorPdoStorage {
 		return $authors;
 	}
 
+	public function getAuthorById($id) {
+		$this->_initDbConnection();
+		
+		$stm = $this->_prepareStatement('author', 'getById');		
+		$stm->execute(array(
+			':id' => $id
+		));
+		
+		if ($this->_checkPdoError($stm)) {
+			return false;
+		}
+
+		if ($author = $stm->fetchObject()) {
+			return $author;
+		}	
+		return NULL;
+	}
+
+	public function getAuthor($name) {
+		$this->_initDbConnection();
+		
+		$stm = $this->_prepareStatement('author', 'getByName');		
+		$stm->execute(array(
+			':name' => $name
+		));
+		
+		if ($this->_checkPdoError($stm)) {
+			return false;
+		}
+
+		if ($author = $stm->fetchObject()) {
+			return $author;
+		}	
+		return NULL;
+	}
 
 	####################################################################
 	##
