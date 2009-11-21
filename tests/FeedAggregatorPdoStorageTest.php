@@ -31,13 +31,27 @@ class FeedAggregatorPdoStorageTest extends PHPUnit_Framework_TestCase {
 			'email' => 'author@example.com'
 		);
 	}
+	
+	protected function _getEntry() {
+		// Simplified Atom structure
+		return (object)array(
+			'title'     => 'Entry title',
+			'id'        => 'tag:example.com:/unit/test/entry',
+			'url'       => 'http://example.com/test-entry.html',
+			'author'    => (object)array(
+				'name'    => 'Entry Author'
+			),
+			'published' => '2009-10-20T18:19:55+01:00',
+			'content'   => 'Unit test entry content'
+		);
+	}
 
 
 	public function testInit() {
 		$this->assertTrue(class_exists('FeedAggregatorPdoStorage'));
 	}
 	
-	public function testGetFeeds() {
+	public function testFeed() {
 		$feed = $this->_getFeed();
 
 		// Check that the feed table is empty
@@ -159,6 +173,10 @@ class FeedAggregatorPdoStorageTest extends PHPUnit_Framework_TestCase {
 		$res = $this->storage->addAuthor($author);
 		$this->assertTrue($res);
 		
+		// Adding an existing author
+		$res = $this->storage->addAuthor($author);
+		$this->assertFalse($res);
+
 		// Check the author table isn't empty
 		$authors = $this->storage->getAuthors();
 		$this->assertNotNull($authors);
@@ -222,6 +240,99 @@ class FeedAggregatorPdoStorageTest extends PHPUnit_Framework_TestCase {
 		$this->assertFalse($res);
 
 	}
+
+	public function testEntry() {
+		$entry = $this->_getEntry();
+		//print_r($entry); return;
+
+		// Check that the entry table is empty
+		$entries = $this->storage->getEntries();
+		$this->assertNotNull($entries);
+		$this->assertTrue(is_array($entries));
+		$this->assertEquals(0, count($entries));
+
+		// Check entry hasn't been added		
+		$res = $this->storage->isEntry($entry->id);
+		$this->assertFalse($res);
+
+		// Adding a valid entry
+		$res = $this->storage->addEntry($entry);
+		$this->assertTrue($res);
+
+		// Adding an existing entry
+		$res = $this->storage->addEntry($entry);
+		$this->assertFalse($res);
+
+		// Check entry has been added		
+		$res = $this->storage->isEntry($entry->id);
+		$this->assertTrue($res);
+
+		// Check the entry table isn't empty
+		$entries = $this->storage->getEntries();
+		$this->assertNotNull($entries);
+		$this->assertTrue(is_array($entries));
+		$this->assertEquals(1, count($entries));
+		
+		$entry1 = $entries[0];
+		$this->assertNotNull($entry1);
+		$this->assertNotNull($entry1->row_id);
+		$this->assertNotNull($entry1->id);
+		$this->assertNotNull($entry1->title);
+		$this->assertNotNull($entry1->url);
+		$this->assertNotNull($entry1->content);
+		
+		$this->assertTrue(is_numeric($entry1->row_id));
+		$this->assertEquals($entry->id, $entry1->id);
+		$this->assertEquals($entry->title, $entry1->title);
+		$this->assertEquals($entry->url, $entry1->url);
+		$this->assertEquals($entry->content, $entry1->content);
+		$this->assertEquals($entry->published, $entry1->published);
+
+		// Check entry can be retrieved		
+		$entry2 = $this->storage->getEntry($entry->id);
+		$this->assertNotNull($entry2);
+		$this->assertNotNull($entry2->row_id);
+		$this->assertNotNull($entry2->id);
+		$this->assertNotNull($entry2->title);
+		$this->assertNotNull($entry2->url);
+		$this->assertNotNull($entry2->content);
+		
+		$this->assertTrue(is_numeric($entry2->row_id));
+		$this->assertEquals($entry->id, $entry2->id);
+		$this->assertEquals($entry->title, $entry2->title);
+		$this->assertEquals($entry->url, $entry2->url);
+		$this->assertEquals($entry->content, $entry2->content);
+		$this->assertEquals($entry->published, $entry2->published);
+
+		// Check entry can be retrieved by it's row id
+		$entry3 = $this->storage->getEntryById($entry2->row_id);
+		$this->assertNotNull($entry3);
+		$this->assertNotNull($entry3->row_id);
+		$this->assertNotNull($entry3->id);
+		$this->assertNotNull($entry3->title);
+		$this->assertNotNull($entry3->url);
+		$this->assertNotNull($entry3->content);
+		
+		$this->assertTrue(is_numeric($entry3->row_id));
+		$this->assertEquals($entry->id, $entry3->id);
+		$this->assertEquals($entry->title, $entry3->title);
+		$this->assertEquals($entry->url, $entry3->url);
+		$this->assertEquals($entry->content, $entry3->content);
+		$this->assertEquals($entry->published, $entry3->published);
+
+		
+		// Delete the entry
+		$res = $this->storage->deleteEntry($entry->id);
+		$this->assertTrue($res);
+
+		// Check entry doesn't exist
+		$res = $this->storage->isEntry($entry->id);
+		$this->assertFalse($res);
+
+		print_r($entry);
+	}
+
+
 } 
 
 ?>

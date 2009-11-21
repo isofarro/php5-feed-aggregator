@@ -33,6 +33,9 @@ class FeedAggregatorPdoStorage {
 		}
 	}
 
+	##
+	## Feed table
+	##
 
 	public function addFeed($feed) {
 		$this->_initDbConnection();
@@ -145,6 +148,9 @@ class FeedAggregatorPdoStorage {
 		return false;
 	}
 
+	##
+	## Author table
+	##
 
 	public function addAuthor($author) {
 		$this->_initDbConnection();
@@ -250,11 +256,147 @@ class FeedAggregatorPdoStorage {
 		return false;
 	}
 	
+	##
+	## Entry table
+	##
+
+	public function addEntry($entry) {
+		$this->_initDbConnection();
+		
+		// TODO: convert author into authorid
+		$authorId = 1;
+		
+		$stm = $this->_prepareStatement('entry', 'add');
+		$stm->execute(array(
+			':url'       => $entry->url,
+			':title'     => $entry->title,
+			':id'        => $entry->id,
+			
+			':author_id' => $authorId,
+			':summary'   => (!empty($entry->summary))?$entry->summary:'',
+			':content'   => (!empty($entry->content))?$entry->content:'',
+			
+			':published' => strtotime($entry->published),
+			':updated'   => (!empty($entry->updated))?strtotime($entry->updated):0
+
+		));
+
+		if ($this->_isPdoError($stm)) {
+			return false;
+		}		
+		
+		return true;
+	}
+
+
+	public function getEntries() {
+		$this->_initDbConnection();
+		
+		$stm = $this->_prepareStatement('entry', 'getAll');		
+		$stm->execute();
+		
+		if ($this->_checkPdoError($stm)) {
+			return NULL;
+		}
+
+		$entries = array();
+		while($row = $stm->fetchObject()) {
+			$row = $this->_hydrateEntry($row);
+			$entries[] = $row;
+		}
+		return $entries;
+	}
+	
+	public function isEntry($id) {
+		$entry = $this->getEntry($id);
+		return !empty($entry->id);
+	}
+
+
+	public function getEntryById($row_id) {
+		$this->_initDbConnection();
+		
+		$stm = $this->_prepareStatement('entry', 'getById');
+		$stm->execute(array(
+			':row_id' => $row_id
+		));
+		
+		if ($this->_checkPdoError($stm)) {
+			return false;
+		}
+
+		if ($entry = $stm->fetchObject()) {
+			$entry = $this->_hydrateEntry($entry);
+			return $entry;
+		}	
+		return NULL;
+	}
+	
+
+	public function getEntry($id) {
+		$this->_initDbConnection();
+		
+		$stm = $this->_prepareStatement('entry', 'getByAtomId');		
+		$stm->execute(array(
+			':id' => $id
+		));
+		
+		if ($this->_checkPdoError($stm)) {
+			return false;
+		}
+
+		if ($entry = $stm->fetchObject()) {
+			$entry = $this->_hydrateEntry($entry);
+			return $entry;
+		}	
+		return NULL;
+	}
+	
+	
+	public function deleteEntry($entry) {
+		$this->_initDbConnection();
+		
+		if (is_string($entry)) {
+			$stm = $this->_prepareStatement('entry', 'deleteByAtomId');		
+			$stm->execute(array(
+				':id' => $entry
+			));
+		} else if (!empty($entry->row_id)) {
+			$stm = $this->_prepareStatement('entry', 'deleteById');		
+			$stm->execute(array(
+				':row_id' => $entry->row_id
+			));
+		}
+			
+		if ($this->_checkPdoError($stm)) {
+			return false;
+		}
+
+		if ($stm->rowCount()) {
+			return true;
+		}	
+		return false;
+	}
+	
 
 	####################################################################
 	##
 	## Private and protected methods
 	##
+	
+	protected function _hydrateEntry($entry) {
+		// TODO: hydrate authorid
+		
+		if ($entry->published) {
+			$entry->published = date('c', $entry->published);
+		}
+
+		if ($entry->updated) {
+			$entry->updated = date('c', $entry->updated);
+		}
+		
+		return $entry;
+	}
 	
 	/**
 		_initDbConnection: lazy initialisation of connection and database. 
@@ -469,6 +611,44 @@ CREATE TABLE IF NOT EXISTS `entry` (
 
 );
 SQL;
+
+		$this->schema['entry']['add'] = <<<SQL
+INSERT INTO `entry`
+(row_id, url, title, id, author_id, summary, content, published, updated)
+VALUES
+(NULL, :url, :title, :id, :author_id, :summary, :content, :published, :updated)
+SQL;
+
+		$this->schema['entry']['getAll'] = <<<SQL
+SELECT * FROM `entry`;
+SQL;
+
+		// TODO: Add join for author id
+		$this->schema['entry']['getById'] = <<<SQL
+SELECT * FROM `entry`
+WHERE
+	row_id = :row_id;
+SQL;
+
+		// TODO: Add join for author id
+		$this->schema['entry']['getByAtomId'] = <<<SQL
+SELECT * FROM `entry`
+WHERE
+	id = :id;
+SQL;
+
+		$this->schema['entry']['deleteById'] = <<<SQL
+DELETE FROM `entry`
+WHERE
+	row_id = :row_id;
+SQL;
+
+		$this->schema['entry']['deleteByAtomId'] = <<<SQL
+DELETE FROM `entry`
+WHERE
+	id = :id;
+SQL;
+
 
 
 		#################################################################
