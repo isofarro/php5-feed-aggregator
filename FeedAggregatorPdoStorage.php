@@ -264,7 +264,11 @@ class FeedAggregatorPdoStorage {
 		$this->_initDbConnection();
 		
 		// TODO: convert author into authorid
-		$authorId = 1;
+		$authorId = 0;
+		
+		if ($entry->author) {
+			$authorId = $this->_getAuthorId($entry->author);
+		}
 		
 		$stm = $this->_prepareStatement('entry', 'add');
 		$stm->execute(array(
@@ -385,7 +389,7 @@ class FeedAggregatorPdoStorage {
 	##
 	
 	protected function _hydrateEntry($entry) {
-		// TODO: hydrate authorid
+		//echo "Hydrating: "; print_r($entry);
 		
 		if ($entry->published) {
 			$entry->published = date('c', $entry->published);
@@ -395,7 +399,28 @@ class FeedAggregatorPdoStorage {
 			$entry->updated = date('c', $entry->updated);
 		}
 		
+		if ($entry->author_id) {
+			$entry->author = $this->getAuthorById($entry->author_id);
+			//echo "Hydrating author: "; print_r($entry->author);
+			unset($entry->author_id);
+		}
+		
 		return $entry;
+	}
+	
+	protected function _getAuthorId($author) {
+		if (!empty($author->id)) {
+			return $author->id;
+		} else {
+			$this->addAuthor($author);
+			$storedAuthor = $this->getAuthor($author->name);
+			//echo "Stored Author: "; print_r($storedAuthor);
+			
+			if (!empty($storedAuthor->id)) {
+				return $storedAuthor->id;
+			}
+		}
+		return 0;
 	}
 	
 	/**

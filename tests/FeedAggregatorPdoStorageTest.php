@@ -280,6 +280,10 @@ class FeedAggregatorPdoStorageTest extends PHPUnit_Framework_TestCase {
 		$this->assertNotNull($entry1->title);
 		$this->assertNotNull($entry1->url);
 		$this->assertNotNull($entry1->content);
+
+		$this->assertNotNull($entry1->author);
+		$this->assertNotNull($entry1->author->name);
+
 		
 		$this->assertTrue(is_numeric($entry1->row_id));
 		$this->assertEquals($entry->id, $entry1->id);
@@ -287,6 +291,7 @@ class FeedAggregatorPdoStorageTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($entry->url, $entry1->url);
 		$this->assertEquals($entry->content, $entry1->content);
 		$this->assertEquals($entry->published, $entry1->published);
+		$this->assertEquals($entry->author->name, $entry1->author->name);
 
 		// Check entry can be retrieved		
 		$entry2 = $this->storage->getEntry($entry->id);
@@ -329,7 +334,7 @@ class FeedAggregatorPdoStorageTest extends PHPUnit_Framework_TestCase {
 		$res = $this->storage->isEntry($entry->id);
 		$this->assertFalse($res);
 
-		print_r($entry);
+		//print_r($entry1);
 	}
 
 
