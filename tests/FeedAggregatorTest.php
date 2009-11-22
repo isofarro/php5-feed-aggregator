@@ -50,6 +50,29 @@ class FeedAggregatorTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(5, $res);
 	}
 	
+	public function testGetFeedItems() {
+		$feed = $this->_getLocalFeed();
+		$res = $this->aggregator->addFeed($feed);
+		$res = $this->aggregator->updateFeeds();
+		$this->assertEquals(5, $res);
+
+		$items = $this->aggregator->getFeedItems($feed->url);
+		$this->assertNotNull($items);
+		$this->assertType('array', $items);
+		$this->assertEquals(4, count($items));
+		
+		$item = $items[0];
+		$this->assertNotNull($item);
+		//print_r($item);
+		
+		$this->assertNotNull($item->id);
+		$this->assertNotNull($item->title);
+		$this->assertNotNull($item->url);
+		$this->assertNotNull($item->published);
+		$this->assertNotNull($item->author);
+		$this->assertNotNull($item->author->name);
+	}
+	
 	
 	
 }

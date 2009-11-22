@@ -509,6 +509,32 @@ class FeedAggregatorPdoStorage {
 		
 	}
 	
+	public function getFeedEntries($feedUrl, $maxItems=false) {
+		$this->_initDbConnection();
+		
+		$stm = $this->_prepareStatement('feedentry', 'getByFeedUrl');		
+		$stm->execute(array(
+			':feed_url' => $feedUrl
+		));
+		
+		if ($this->_checkPdoError($stm)) {
+			return NULL;
+		}
+
+		$entries   = array();
+		$itemCount = 0;
+		while($row = $stm->fetchObject()) {
+			//echo '@';
+			$row = $this->_hydrateEntry($row);
+			$entries[] = $row;
+			$itemCount++;
+			if ($maxItems && $maxItems==$itemCount) {
+				break;
+			}
+		}
+		return $entries;
+	}
+	
 
 	####################################################################
 	##
@@ -890,6 +916,19 @@ INSERT INTO `feedentry`
 (feed_id, entry_id, created)
 VALUES
 (:feed_id, :entry_id, :created)
+SQL;
+
+	$this->schema['feedentry']['getByFeedUrl'] = <<<SQL
+SELECT 
+	row_id, entry.url, entry.title, entry.id, 
+	author_id, summary, content,
+	entry.published, entry.updated
+FROM entry
+LEFT JOIN feedentry ON entry.row_id      = feedentry.entry_id
+LEFT JOIN feed      ON feedentry.feed_id = feed.id
+WHERE
+	feed.url = :feed_url
+ORDER BY entry.published DESC
 SQL;
 
 

@@ -41,9 +41,15 @@ class FeedAggregator {
 	**/
 	public function getFeedItems($url, $maxItems=4) {
 		$this->_initStorage();
-	
+		$items = $this->storage->getFeedEntries($url, $maxItems);
+		return $items;
 	}
 	
+	/**
+		addFeed: subscribe to a new Feed in the aggregator
+		@param a Feed Object
+		@returns boolean whether the feed was successfully added or not
+	**/
 	public function addFeed($feed) {
 		$this->_initStorage();
 		return $this->storage->addFeed($feed);
@@ -88,22 +94,21 @@ class FeedAggregator {
 
 			if ($res) {
 				$itemsAdded++;
-				echo '+';
+				//echo '+';
 				
 				$ts = strtotime($atom->published);
 				if ($ts>$lastUpdated) {
 					$lastUpdated = $ts;
 				}
 			}
-			
 		}
-		
+
+		// Update the Feed polling stats
 		$feedInfo->lastPolled = $lastPolled;
 		if ($lastUpdated) {
-			//echo "Last Updated time: {$lastUpdated}\n";
 			$feedInfo->lastUpdated = $lastUpdated;
 		}
-		print_r($feedInfo);
+		//print_r($feedInfo);
 		$res = $this->storage->updateFeed($feedInfo);
 		if (!$res) {
 			echo "WARN: Something went wrong with the feed update.\n";
