@@ -202,7 +202,10 @@ class FeedAggregatorPdoStorage {
 		return true;
 	}
 
-
+	/**
+		getAuthors: gets all the stored authors
+		@returns an Array of Authors
+	**/
 	public function getAuthors() {
 		$this->_initDbConnection();
 		
@@ -220,12 +223,21 @@ class FeedAggregatorPdoStorage {
 		return $authors;
 	}
 	
+	/**
+		isAuthor: returns whether an Author exists with the specified name
+		@param Author name
+		@returns true/false whether the Author by that name exists.
+	**/
 	public function isAuthor($name) {
 		$author = $this->getAuthor($name);
 		return !empty($author->name);
 	}
 
-
+	/**
+		getAuthorById: gets the Author by their database id / foreign key
+		@param id
+		@returns Author, or NULL
+	**/
 	public function getAuthorById($id) {
 		$this->_initDbConnection();
 		
@@ -235,7 +247,7 @@ class FeedAggregatorPdoStorage {
 		));
 		
 		if ($this->_checkPdoError($stm)) {
-			return false;
+			return NULL;
 		}
 
 		if ($author = $stm->fetchObject()) {
@@ -244,7 +256,11 @@ class FeedAggregatorPdoStorage {
 		return NULL;
 	}
 	
-
+	/**
+		getAuthor: returns the Author object based on the supplied name
+		@param author name
+		@returns Author, or NULL
+	**/
 	public function getAuthor($name) {
 		$this->_initDbConnection();
 		
@@ -254,7 +270,7 @@ class FeedAggregatorPdoStorage {
 		));
 		
 		if ($this->_checkPdoError($stm)) {
-			return false;
+			return NULL;
 		}
 
 		if ($author = $stm->fetchObject()) {
@@ -263,7 +279,12 @@ class FeedAggregatorPdoStorage {
 		return NULL;
 	}
 
-
+	/**
+		deleteAuthor: deletes the Author object given either an existing author object, or
+			the author name
+		@param Author name, or an existing Author object
+		@returns boolean whether the deletion was successful or not.
+	**/
 	public function deleteAuthor($author) {
 		$this->_initDbConnection();
 		
@@ -293,6 +314,11 @@ class FeedAggregatorPdoStorage {
 	## Entry table
 	##
 
+	/**
+		addEntry: adds a new Entry
+		@param Entry object
+		@returns boolean whether the insertion was successful or not
+	**/
 	public function addEntry($entry) {
 		$this->_initDbConnection();
 		
@@ -325,7 +351,10 @@ class FeedAggregatorPdoStorage {
 		return true;
 	}
 
-
+	/**
+		getEntries: gets all the stored entries
+		@returns an Array of Entries
+	**/
 	public function getEntries() {
 		$this->_initDbConnection();
 		
@@ -344,12 +373,21 @@ class FeedAggregatorPdoStorage {
 		return $entries;
 	}
 	
+	/**
+		isEntry: returns whether an entry with the specified atom:id exists
+		@param an Atom Id
+		@returns boolean whether this entry exists or not
+	**/
 	public function isEntry($id) {
 		$entry = $this->getEntry($id);
 		return !empty($entry->id);
 	}
 
-
+	/**
+		getEntryById: returns an entry based on the primary key/foreign key
+		@param the entry id
+		@returns an Entry object, or NULL
+	**/
 	public function getEntryById($row_id) {
 		$this->_initDbConnection();
 		
@@ -359,7 +397,7 @@ class FeedAggregatorPdoStorage {
 		));
 		
 		if ($this->_checkPdoError($stm)) {
-			return false;
+			return NULL;
 		}
 
 		if ($entry = $stm->fetchObject()) {
@@ -369,7 +407,11 @@ class FeedAggregatorPdoStorage {
 		return NULL;
 	}
 	
-
+	/**
+		getEntry: returns an Entry based on the specified atom:id
+		@param the Atom Id of the entry
+		@returns an Entry object, or NULL
+	**/
 	public function getEntry($id) {
 		$this->_initDbConnection();
 		
@@ -379,7 +421,7 @@ class FeedAggregatorPdoStorage {
 		));
 		
 		if ($this->_checkPdoError($stm)) {
-			return false;
+			return NULL;
 		}
 
 		if ($entry = $stm->fetchObject()) {
@@ -389,7 +431,11 @@ class FeedAggregatorPdoStorage {
 		return NULL;
 	}
 	
-	
+	/**
+		deleteEntry: delete entry that corresponds to the specified atom:id or Entry object
+		@param Entry Atom Id, or an existing Entry object
+		@returns boolean whether the deletion was successful or not.
+	**/
 	public function deleteEntry($entry) {
 		$this->_initDbConnection();
 		
