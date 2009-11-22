@@ -142,8 +142,8 @@ class FeedAggregator {
 	
 	/**
 		getEntryUrl: get the Entry URL for an Atom Entry. Looks through the links array
-		@param an Entry
 		TODO: Move to Feed Parser
+		@param an Entry
 		@returns the URL of the Entry, or NULL if not found.
 	**/
 	public function getEntryUrl($entry) {

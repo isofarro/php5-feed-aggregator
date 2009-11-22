@@ -3,6 +3,24 @@ PHP5 Feed Aggregator
 
 A simplified Feed aggregator that stores simplified Atom data structures to a PDO data source.
 
+
+	$feedUrl = 'http://isolani.co.uk/articles.rdf';
+    $aggregator = new FeedAggregator(array(
+		// Where the data is stored. Any PDO data source
+		'datasource' => 'sqlite:/tmp/db-aggregator.db'
+	));
+	
+	// Adding a new feed to the aggregator
+	$aggregator->addFeed($feedUrl);
+	
+	// Update the feeds - this should be running off a cron
+	$aggregator->updateFeeds();
+	
+	// Requesting the most recent item in the feed
+	$feedItems = $aggregator->getFeedItems($feedUrl, 1);
+	print_r($feedItems);
+	
+
 The simplifed PHP data structure for an Atom entry looks like this:
 
     stdClass Object
