@@ -146,6 +146,13 @@ class FeedAggregatorPdoStorageTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($feed->title,    $feed3->title);
 		$this->assertEquals($feed2->id,      $feed3->id);
 		$this->assertEquals($feed2->created, $feed3->created);
+		
+		// Update the feed
+		$feed3->lastPolled = time();
+		$res = $this->storage->updateFeed($feed3);
+		$this->assertNotNull($res);
+		$this->assertTrue($res);
+
 
 		// Delete the feed
 		$res = $this->storage->deleteFeed($feed->url);
@@ -154,6 +161,37 @@ class FeedAggregatorPdoStorageTest extends PHPUnit_Framework_TestCase {
 		// Check feed hasn't been added		
 		$res = $this->storage->isFeed($feed->url);
 		$this->assertFalse($res);
+	}
+	
+	public function testUpdateFeed() {
+		$feed = $this->_getFeed();
+
+		// Adding the feed
+		$res = $this->storage->addFeed($feed);
+		$this->assertTrue($res);
+
+		// Check the feed table isn't empty
+		$feeds = $this->storage->getFeeds();
+		$this->assertNotNull($feeds);
+		$this->assertTrue(is_array($feeds));
+		$this->assertEquals(1, count($feeds));
+
+		// Check returned feed is what we added
+		$feed1 = $feeds[0];
+
+		// Update feed 1
+		$feed1->lastPolled  = time();
+		$feed1->lastUpdated = 1258888888;
+
+		$res = $this->storage->updateFeed($feed1);
+		$this->assertNotNull($res);
+		$this->assertTrue($res);
+		
+		$feed2 = $this->storage->getFeed($feed1->url);
+		$this->assertNotNull($feed2);
+		$this->assertNotNull($feed2->lastPolled);
+		$this->assertEquals($feed1->lastPolled, $feed2->lastPolled);
+		
 	}
 	
 	public function testAuthor() {

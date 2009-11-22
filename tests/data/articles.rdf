@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rdf:RDF
+		xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+		xmlns:dc="http://purl.org/dc/elements/1.1/"
+		xmlns="http://purl.org/rss/1.0/">
+
+	<channel rdf:about="http://www.isolani.co.uk/articles/">
+		<title>Isolani Web Articles</title>
+		<link>http://www.isolani.co.uk/</link>
+		<description>Web development articles written by Isofarro</description>
+		<dc:language>en-gb</dc:language>
+
+		<dc:creator>Isofarro</dc:creator>
+		<dc:date>2003-04-23T00:42:54+01:00</dc:date>
+		<items>
+			<rdf:Seq>
+				<rdf:li rdf:resource="http://www.isolani.co.uk/articles/simpleJavascriptAndForms.html" />
+				<rdf:li rdf:resource="http://www.isolani.co.uk/articles/accessibilityOfTextOnlyWebsites.html" />
+				<rdf:li rdf:resource="http://www.isolani.co.uk/articles/accessibleTables.html" />
+				<rdf:li rdf:resource="http://www.isolani.co.uk/articles/accessibility.html" />
+
+				<rdf:li rdf:resource="http://www.isolani.co.uk/articles/mailto.html" />
+			</rdf:Seq>
+		</items>
+	</channel>
+	
+	<item rdf:about="http://www.isolani.co.uk/articles/simpleJavascriptAndForms.html">
+		<title>Simple Javascript and Forms</title>
+		<link>http://www.isolani.co.uk/articles/simpleJavascriptAndForms.html</link>
+		<description>Adding Javascript validation to forms without hindering accessibility.</description>
+
+		<dc:subject>Accessibility</dc:subject>
+		<dc:creator>Isofarro</dc:creator>
+		<dc:date>2004-09-14T17:29:00+01:00</dc:date>
+	</item>
+
+	<item rdf:about="http://www.isolani.co.uk/articles/accessibilityOfTextOnlyWebsites.html">
+		<title>Accessibility of text-only websites</title>
+
+		<link>http://www.isolani.co.uk/articles/accessibilityOfTextOnlyWebsites.html</link>
+		<description>An examination of how creating text-only versions of websites affects accessibility.</description>
+		<dc:subject>Accessibility</dc:subject>
+		<dc:creator>Isofarro</dc:creator>
+		<dc:date>2003-12-23T14:36:00+01:00</dc:date>
+	</item>
+
+	<item rdf:about="http://www.isolani.co.uk/articles/structuredTables.html">
+		<title>Creating Structured Tables</title>
+		<link>http://www.isolani.co.uk/articles/structuredTables.html</link>
+		<description>A brief tour of the elements and attributes used in building well-structured tables.</description>
+		<dc:subject>Accessibility</dc:subject>
+		<dc:creator>Isofarro</dc:creator>
+
+		<dc:date>2003-04-12T11:54:00+01:00</dc:date>
+	</item>
+
+	<item rdf:about="http://www.isolani.co.uk/articles/accessibility.html">
+		<title>Accessibility in [Company Name]</title>
+		<link>http://www.isolani.co.uk/articles/accessibility.html</link>
+		<description>Building a business and legal case for accessible websites.</description>
+
+		<dc:subject>Accessibility</dc:subject>
+		<dc:creator>Isofarro</dc:creator>
+		<dc:date>2003-04-12T11:53:00+01:00</dc:date>
+	</item>
+		
+	<item rdf:about="http://www.isolani.co.uk/articles/mailto.html">
+		<title>The Mythical Mailto:</title>
+		<link>http://www.isolani.co.uk/articles/mailto.html</link>
+
+		<description>Discussing the misuse of the mailto URI as an action to the form.</description>
+		<dc:subject>Accessibility</dc:subject>
+		<dc:creator>Isofarro</dc:creator>
+		<dc:date>2000-07-20T11:53:00+01:00</dc:date>
+	</item>
+	
+</rdf:RDF>

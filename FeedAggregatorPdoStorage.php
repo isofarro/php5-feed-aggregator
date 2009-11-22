@@ -70,6 +70,28 @@ class FeedAggregatorPdoStorage {
 	}
 	
 	/**
+		updateFeed: updates an existing Feed to the aggregator
+		@param a feed object
+		@returns boolean whether the feed was updated
+	**/
+	public function updateFeed($feed) {
+		$this->_initDbConnection();
+		
+		$stm = $this->_prepareStatement('feed', 'updatePoll');
+		$stm->execute(array(
+			':id'          => $feed->id,
+			':lastUpdated' => $feed->lastUpdated,
+			':lastPolled'  => $feed->lastPolled
+		));
+
+		if ($this->_isPdoError($stm)) {
+			return false;
+		}		
+		
+		return true;
+	}
+
+	/**
 		getFeeds: returns all the feeds the aggregator has saved
 		@returns an array of Feed objects
 	**/
@@ -461,6 +483,32 @@ class FeedAggregatorPdoStorage {
 		return false;
 	}
 	
+	##
+	## FeedEntry table
+	##
+	
+	public function addFeedEntry($feed, $entry) {
+		$this->_initDbConnection();
+		
+		// TODO: convert author into authorid
+		$entryId = $this->_getEntryRowId($entry);
+		//echo "Adding feedEntry [{$feed->id}:{$entryId}]\n";
+
+		$stm = $this->_prepareStatement('feedentry', 'add');
+		$stm->execute(array(
+			':feed_id'  => $feed->id,
+			':entry_id' => $entryId,
+			':created'  => time()
+		));
+
+		if ($this->_isPdoError($stm)) {
+			return false;
+		}		
+		
+		return true;
+		
+	}
+	
 
 	####################################################################
 	##
@@ -494,6 +542,27 @@ class FeedAggregatorPdoStorage {
 		return $entry;
 	}
 	
+	/**
+		_getEntryRowId: returns the entry row_id for the specified entry object.
+			If none found, the function stores the entry and returns it's row_id.
+			Or returns 0 if this fails.
+		@param an Entry object
+		@returns the Entry row_id, or 0 if none could be found/created
+	**/
+	protected function _getEntryRowId($entry) {
+		if (!empty($entry->row_id)) {
+			return $entry->row_id;
+		} else {
+			$this->addEntry($entry);
+			$storedEntry = $this->getEntry($entry->id);
+			
+			if (!empty($storedEntry->row_id)) {
+				return $storedEntry->row_id;
+			}
+		}
+		return 0;
+	}
+
 	/**
 		_getAuthorId: returns the author id for the specified author object.
 			If none found, the function stores the author and returns it's key.
@@ -653,6 +722,15 @@ VALUES
  :created, :lastUpdated, :lastPolled, :nextPoll);
 SQL;
 
+		$this->schema['feed']['updatePoll'] = <<<SQL
+UPDATE `feed` 
+SET
+	lastUpdated = :lastUpdated,
+	lastPolled  = :lastPolled
+WHERE
+	id = :id
+SQL;
+
 		$this->schema['feed']['getAll'] = <<<SQL
 SELECT * FROM `feed`;
 SQL;
@@ -805,6 +883,13 @@ CREATE TABLE IF NOT EXISTS `feedentry` (
 
 	PRIMARY KEY(feed_id, entry_id)	
 );
+SQL;
+
+	$this->schema['feedentry']['add'] = <<<SQL
+INSERT INTO `feedentry`
+(feed_id, entry_id, created)
+VALUES
+(:feed_id, :entry_id, :created)
 SQL;
 
 
