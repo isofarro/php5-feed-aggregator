@@ -52,6 +52,7 @@ class FeedAggregator {
 	**/
 	public function addFeed($feed) {
 		$this->_initStorage();
+		// TODO: Implement auto-discovery, given just a URL
 		return $this->storage->addFeed($feed);
 	}
 	
@@ -67,7 +68,9 @@ class FeedAggregator {
 		
 		$itemsAdded = 0;
 		foreach($feeds as $feed) {
+			echo "{$feed->title}: ";
 			$itemsAdded += $this->updateFeed($feed);
+			echo "{$itemsAdded}\n";
 		}
 		return $itemsAdded;
 	}
@@ -173,6 +176,11 @@ class FeedAggregator {
 	## Protected methods
 	##
 	
+	/**
+		_requestFeed: Returns a parsed object of a feed
+		@param A feed object, or feed url
+		@returns a parsed Feed data structure
+	**/
 	protected function _requestFeed($feedInfo) {
 		$this->_initStorage();
 		$this->_initFeedParser();
@@ -211,6 +219,9 @@ class FeedAggregator {
 		}
 	}
 
+	/**
+		_initFeedParser: Initialises the Feed Parser (FeedParser)
+	**/
 	protected function _initFeedParser() {
 		if(empty($this->parser)) {
 			$this->parser = new FeedParser();
