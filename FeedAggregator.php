@@ -136,7 +136,7 @@ class FeedAggregator {
 			'url'       => $entryUrl,
 			'author'    => $entry->authors[0],
 			'summary'   => $entry->summary,
-			'content'   => $entry->content,
+			'content'   => (!empty($entry->content->text))?$entry->content->text:$entry->content,
 			'published' => $entry->published,
 			'updated'   => $entry->updated
 		);
